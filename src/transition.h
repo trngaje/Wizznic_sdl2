@@ -18,7 +18,11 @@
  * along with Wizznic.  If not, see <http://www.gnu.org/licenses/>.     *
  ************************************************************************/
 
+#ifdef OGS_SDL2
+#include <SDL2/SDL.h>
+#else
 #include <SDL/SDL.h>
+#endif
 
 #define TRANSITION_TYPE_DISSOLVE 0
 #define TRANSITION_TYPE_CURTAIN_UP 1

@@ -99,9 +99,18 @@
 
 //Accelerated scaling
 #if defined(WITH_OPENGL)
+#ifdef OGS_SDL2
+  #include <SDL2/SDL.h>
+#else
   #include <SDL/SDL.h>
+#endif
   #define HAVE_ACCELERATION
+
+#ifdef OGS_SDL2
+  SDL_Surface* platformInitAccel(void);
+#else
   SDL_Surface* platformInitAccel( int sdlVideoModeFlags );
+#endif
   void platformDrawScaled(SDL_Surface* src);
 #endif
 

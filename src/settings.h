@@ -21,7 +21,11 @@
 #define SETMASK_UPLOAD_ONLINE 1
 #define SETMASK_UPLOAD_ENABLED 2
 #define SETMASK_UPLOAD_FIRSTRUN 4
+#ifdef OGS_SDL2
+#include <SDL2/SDL.h>
+#else
 #include <SDL/SDL.h>
+#endif
 
 struct settings_s {
   int wizVol; //Only used on wiz.

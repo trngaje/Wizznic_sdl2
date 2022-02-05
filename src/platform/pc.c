@@ -26,7 +26,16 @@ static GLuint dlist;
 
 static SDL_Surface* oglWindow;
 
+#ifdef OGS_SDL2
+extern SDL_Window* sdlWindow;
+extern SDL_Surface* sdlSurface;
+#endif
+
+#ifdef OGS_SDL2
+SDL_Surface* riftInitAccel(void)
+#else
 SDL_Surface* riftInitAccel(int sdlVideoModeFlags)
+#endif
 {
   int w=setting()->glWidth,h=setting()->glHeight;
 
@@ -34,7 +43,17 @@ SDL_Surface* riftInitAccel(int sdlVideoModeFlags)
   h = setting()->glHeight;
 
   SDL_Surface* screen = SDL_CreateRGBSurface(SDL_SWSURFACE, 320,240,24, 0x00ff0000,0x0000ff00,0x000000ff,0xff000000);
+#ifdef OGS_SDL2
+  sdlWindow = SDL_CreateWindow("Wizznic",
+                              SDL_WINDOWPOS_UNDEFINED,
+                              SDL_WINDOWPOS_UNDEFINED,
+                              w, h,
+                              SDL_WINDOW_OPENGL);
+  sdlSurface = SDL_GetWindowSurface(sdlWindow);
+  oglWindow = SDL_CreateRGBSurface(SDL_SWSURFACE, w, h, 32, 0, 0, 0, 0);
+#else
   oglWindow = SDL_SetVideoMode(w,h,32, SDL_OPENGL | sdlVideoModeFlags );
+#endif
 
   glViewport(0, 0, (GLint)w, (GLint)h);
 
@@ -91,26 +110,58 @@ SDL_Surface* riftInitAccel(int sdlVideoModeFlags)
 
 }
 
+#ifdef OGS_SDL2
+SDL_Surface* normalInitAccel(void)
+#else
 SDL_Surface* normalInitAccel( int sdlVideoModeFlags )
+#endif
 {
+#ifdef OGS_SDL2
+  SDL_DisplayMode DM;
+  SDL_GetCurrentDisplayMode(0, &DM);
+#else
   const SDL_VideoInfo* vidinfo = SDL_GetVideoInfo();
+#endif
   int w=setting()->glWidth,h=setting()->glHeight;
+#ifdef OGS_SDL2
+  if(1)
+#else
   if( (sdlVideoModeFlags&SDL_FULLSCREEN) )
+#endif
   {
+#ifdef OGS_SDL2
+    w = DM.w;
+    h = DM.h;
+#else
     w = vidinfo->current_w;
     h = vidinfo->current_h;
+#endif
   } else {
     if(w==-1||h==-1)
     {
       //If width or height is set to -1, autosize is enabled, calculate largest window size that fit on the screen, keeps aspect and scales nicely.
+#ifdef OGS_SDL2
+      int factor=(int)floor( (float)(DM.h-1)/240.0 );
+#else
       int factor=(int)floor( (float)(vidinfo->current_h-1)/240.0 );
+#endif
       w=320*factor;
       h=240*factor;
     }
   }
 
   SDL_Surface* screen = SDL_CreateRGBSurface(SDL_SWSURFACE, 320,240,24, 0x00ff0000,0x0000ff00,0x000000ff,0xff000000);
+#ifdef OGS_SDL2
+  sdlWindow = SDL_CreateWindow("Wizznic",
+                              SDL_WINDOWPOS_UNDEFINED,
+                              SDL_WINDOWPOS_UNDEFINED,
+                              w, h,
+                              SDL_WINDOW_OPENGL);
+  sdlSurface = SDL_GetWindowSurface(sdlWindow);
+  oglWindow = SDL_CreateRGBSurface(SDL_SWSURFACE, w, h, 32, 0, 0, 0, 0);
+#else
   oglWindow = SDL_SetVideoMode(w,h,32, SDL_OPENGL | sdlVideoModeFlags );
+#endif
 
   int vW = (GLint)h*(320.0f/240.0f);
 
@@ -169,13 +220,25 @@ SDL_Surface* normalInitAccel( int sdlVideoModeFlags )
   return(screen);
 }
 
+#ifdef OGS_SDL2
+SDL_Surface* platformInitAccel(void)
+#else
 SDL_Surface* platformInitAccel( int sdlVideoModeFlags )
+#endif
 {
+#ifdef OGS_SDL2
+  if( setting()->rift )
+  {
+    return( riftInitAccel() );
+  }
+  return( normalInitAccel() );
+#else
   if( setting()->rift )
   {
     return( riftInitAccel(sdlVideoModeFlags) );
   }
   return( normalInitAccel(sdlVideoModeFlags) );
+#endif
 }
 
 void drawRift( SDL_Surface* src )
@@ -187,7 +250,12 @@ void drawRift( SDL_Surface* src )
   glTranslatef(540,0,0);
   glCallList(dlist);
   glPopMatrix();
+
+#ifdef OGS_SDL2
+  SDL_GL_SwapWindow(sdlWindow);
+#else
   SDL_GL_SwapBuffers();
+#endif
 }
 
 void drawNormal( SDL_Surface* src )
@@ -195,7 +263,11 @@ void drawNormal( SDL_Surface* src )
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glTexImage2D( GL_TEXTURE_2D, 0, src->format->BytesPerPixel, src->w, src->h, 0, GL_BGR, GL_UNSIGNED_BYTE, src->pixels );
   glCallList(dlist);
+#ifdef OGS_SDL2
+  SDL_GL_SwapWindow(sdlWindow);
+#else
   SDL_GL_SwapBuffers();
+#endif
 }
 
 void platformDrawScaled( SDL_Surface* src )

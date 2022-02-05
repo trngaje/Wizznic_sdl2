@@ -47,18 +47,32 @@ static int ticksToNextPs=0;
 static psysSet_t ps;
 SDL_Rect r; //Used to shake the name
 
-
+#ifdef OGS_SDL2
+extern SDL_Window* sdlWindow;
+extern SDL_Surface* sdlSurface;
+#endif
 
 msg_t* initMsg(const char* strTitle, const char* strName,SDL_Surface* screen)
 {
   msg_t* t = malloc(sizeof(msg_t));
 
   //Create surface
+  
+#ifdef OGS_SDL2
+  t->surfTitle = SDL_CreateRGBSurface(SDL_SWSURFACE, (getCharSize(FONTSMALL)[0]*strlen(strTitle)),(getCharSize(FONTSMALL)[1]), (setting()->bpp*8), screen->format->Rmask,screen->format->Gmask,screen->format->Bmask,screen->format->Amask);
+  t->nameWaving.img = SDL_CreateRGBSurface(SDL_SWSURFACE, (getCharSize(FONTMEDIUM)[0]*strlen(strName)),(getCharSize(FONTMEDIUM)[1]),(setting()->bpp*8), screen->format->Rmask,screen->format->Gmask,screen->format->Bmask,screen->format->Amask);
+#else  
   t->surfTitle = SDL_CreateRGBSurface(SDL_SWSURFACE, (getCharSize(FONTSMALL)[0]*strlen(strTitle)),(getCharSize(FONTSMALL)[1]), (setting()->bpp*8), screen->format->Rmask,screen->format->Gmask,screen->format->Bmask,0xff000000);
   t->nameWaving.img = SDL_CreateRGBSurface(SDL_SWSURFACE, (getCharSize(FONTMEDIUM)[0]*strlen(strName)),(getCharSize(FONTMEDIUM)[1]),(setting()->bpp*8), screen->format->Rmask,screen->format->Gmask,screen->format->Bmask,0xff000000);
+#endif
   t->nameWaving.screen=screen;
+#ifdef OGS_SDL2
+  SDL_FillRect(t->surfTitle, 0, SDL_MapRGB(t->surfTitle->format, 0,0,0));
+  SDL_FillRect(t->nameWaving.img, 0, SDL_MapRGB(t->nameWaving.img->format, 0,0,0));
+#else  
   SDL_FillRect(t->surfTitle, 0, SDL_MapRGB(t->surfTitle->format, 0,255,255));
   SDL_FillRect(t->nameWaving.img, 0, SDL_MapRGB(t->nameWaving.img->format, 0,255,255));
+#endif
 
   //Render text to surface
   txtWrite(t->surfTitle, FONTSMALL, strTitle, 0,0);
@@ -67,13 +81,24 @@ msg_t* initMsg(const char* strTitle, const char* strName,SDL_Surface* screen)
   SDL_Surface* tempSurf;
 
 
+#ifdef OGS_SDL2
+  SDL_SetColorKey( t->surfTitle, SDL_TRUE, SDL_MapRGB( t->surfTitle->format, 0, 0xFF, 0xFF) );
+  tempSurf=SDL_ConvertSurfaceFormat(t->surfTitle, SDL_GetWindowPixelFormat(sdlWindow), 0);
+#else
   SDL_SetColorKey( t->surfTitle, SDL_SRCCOLORKEY, SDL_MapRGB( t->surfTitle->format, 0, 0xFF, 0xFF ) );
   tempSurf=SDL_DisplayFormat(t->surfTitle);
+#endif
+
   SDL_FreeSurface(t->surfTitle);
   t->surfTitle=tempSurf;
 
+#ifdef OGS_SDL2
+  SDL_SetColorKey( t->nameWaving.img, SDL_TRUE, SDL_MapRGB( t->nameWaving.img->format, 0, 0xFF, 0xFF) );
+  tempSurf=SDL_ConvertSurfaceFormat(t->nameWaving.img, SDL_GetWindowPixelFormat(sdlWindow), 0);
+#else
   SDL_SetColorKey( t->nameWaving.img, SDL_SRCCOLORKEY, SDL_MapRGB( t->nameWaving.img->format, 0, 0xFF, 0xFF ) );
   tempSurf=SDL_DisplayFormat(t->nameWaving.img);
+#endif
   SDL_FreeSurface(t->nameWaving.img);
   t->nameWaving.img=tempSurf;
 

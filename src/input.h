@@ -18,7 +18,13 @@
  * along with Wizznic.  If not, see <http://www.gnu.org/licenses/>.     *
  ************************************************************************/
 
+#ifdef OGS_SDL2
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_keyboard.h>
+#else
 #include <SDL/SDL.h>
+#endif
+
 #include "pointer.h"
 #include "board.h"
 
@@ -42,7 +48,11 @@
 #define PLATFORM_JOY_DEADZONE 500
 #endif
 
+#ifdef OGS_SDL2
+SDL_Keycode getChar();
+#else
 SDLKey getChar();
+#endif
 void setButton(int btn); //Nasty
 int getButton(int btn);
 int getBtnTime(int btn);

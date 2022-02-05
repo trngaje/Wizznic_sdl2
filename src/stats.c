@@ -390,7 +390,11 @@ void packUnlinkHsFile()
 }
 
 #if defined (PLATFORM_SUPPORTS_STATSUPLOAD)
+#ifdef OGS_SDL2
+#include <SDL2/SDL_thread.h>
+#else
 #include <SDL/SDL_thread.h>
+#endif
 static char curlbuf[2048];
 typedef struct thrDat
 { char* cmd;
@@ -445,7 +449,11 @@ void statsUpload(int level, int time, int moves, int combos, int score, const ch
       thrData->cmd=malloc(strlen(curlbuf)+1);
       strcpy(thrData->cmd,curlbuf);
       thrData->ret=retVal;
+#ifdef OGS_SDL2
+      if( SDL_CreateThread( upStatsThread, NULL, (void*)thrData ) == NULL )
+#else
       if( SDL_CreateThread( upStatsThread, (void*)thrData ) == NULL )
+#endif
       {
         printf("Warning: Coulnd't start thread: %s\n", SDL_GetError());
       }

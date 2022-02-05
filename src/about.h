@@ -18,7 +18,11 @@
 #ifndef ABOUT_H_INCLUDED
 #define ABOUT_H_INCLUDED
 
+#ifdef OGS_SDL2
+#include <SDL2/SDL.h>
+#else
 #include <SDL/SDL.h>
+#endif
 
 void aboutInit();
 

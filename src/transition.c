@@ -52,11 +52,12 @@ void startTransition(SDL_Surface* scr, uint_fast8_t type, uint_fast16_t time)
   t.timeLeft=t.time;
   t.reverse=0;
 
+#ifndef OGS_SDL2
   if( t.sur != NULL )
   {
     SDL_FreeSurface(t.sur);
   }
-
+#endif
   switch( t.type )
   {
     case TRANSITION_TYPE_DISSOLVE:
@@ -152,7 +153,9 @@ void runTransition(SDL_Surface* scr)
       r.w = 320-x;
       SDL_BlitSurface(tmpSurf,&r, scr, &rr );
 
+#ifndef OGS_SDL2
       SDL_FreeSurface(tmpSurf);
+#endif
     break;
 
     case TRANSITION_TYPE_ROLL_OUT:
@@ -174,8 +177,9 @@ void runTransition(SDL_Surface* scr)
       r.x = HSCREENW-160;
       r.w = 320-x;
       SDL_BlitSurface(tmpSurf,&r, scr, &rr );
-
+#ifndef OGS_SDL2
       SDL_FreeSurface(tmpSurf);
+#endif
     break;
 
   }

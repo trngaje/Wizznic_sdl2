@@ -18,8 +18,13 @@
 #include "sound.h"
 #include "pack.h"
 #include "settings.h"
+#ifdef OGS_SDL2
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_mixer.h>
+#else
 #include <SDL/SDL.h>
 #include <SDL/SDL_mixer.h>
+#endif
 #include "states.h"
 #include "input.h"
 #include "text.h"

@@ -22,11 +22,19 @@
 
 #include "settings.h"
 
+#ifdef OGS_SDL2
+static SDL_Keycode inputChar=0;
+#else
 static SDLKey inputChar=0;
+#endif
 static int joyCanMoveX=0;
 static int joyCanMoveY=0;
 
+#ifdef OGS_SDL2
+SDL_Keycode getChar()
+#else
 SDLKey getChar()
+#endif
 {
   return(inputChar);
 }
@@ -322,6 +330,35 @@ int runControls()
 
         //Keyboard
         case SDL_KEYDOWN:
+#ifdef OGS_SDL2
+          for(i=0; i < C_NUM; i++)
+          {
+            if( event.key.keysym.scancode == button[i].button )
+            {
+              button[i].state=1;
+              button[i].time=0;
+            }
+          }
+
+          if( event.key.keysym.scancode > 31 && event.key.keysym.scancode < 123 )
+          {
+            inputChar=event.key.keysym.scancode;
+
+            if( event.key.keysym.mod & KMOD_SHIFT )
+            {
+              inputChar=toupper(inputChar);
+            }
+          } else if( event.key.keysym.scancode == SDL_SCANCODE_BACKSPACE || event.key.keysym.scancode == SDL_SCANCODE_RETURN )
+          {
+            inputChar=event.key.keysym.scancode;
+#if defined(PC)
+          } else if( event.key.keysym.scancode == SDL_SCANCODE_F1 )
+          {
+            screenShot();
+#endif
+          }
+
+#else
           for(i=0; i < C_NUM; i++)
           {
             if( event.key.keysym.sym == button[i].button )
@@ -348,11 +385,16 @@ int runControls()
             screenShot();
 #endif
           }
+#endif
         break;
         case SDL_KEYUP:
           for(i=0; i < C_NUM; i++)
           {
+#ifdef OGS_SDL2
+            if( event.key.keysym.scancode == button[i].button )
+#else
             if( event.key.keysym.sym == button[i].button )
+#endif
             {
               button[i].state=0;
               button[i].time=0;

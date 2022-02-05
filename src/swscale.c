@@ -21,11 +21,31 @@
 #include "pixel.h"
 
 static SDL_Surface* scale;
+#ifdef OGS_SDL2
+extern SDL_Window* sdlWindow;
+extern SDL_Surface* sdlSurface;
+#endif
 
+#ifdef OGS_SDL2
+SDL_Surface* swScaleInit(int doScale )
+#else
 SDL_Surface* swScaleInit( int sdlVideoModeFlags, int doScale )
+#endif
 {
+#ifdef OGS_SDL2
+  sdlWindow = SDL_CreateWindow("wizznic",
+                              SDL_WINDOWPOS_UNDEFINED,
+                              SDL_WINDOWPOS_UNDEFINED,
+                              SCREENW*doScale,SCREENH*doScale,
+                              SDL_WINDOW_OPENGL);
+  sdlSurface = SDL_GetWindowSurface(sdlWindow);
+  scale = SDL_CreateRGBSurface(SDL_SWSURFACE, SCREENW*doScale,SCREENH*doScale, 16, 0, 0, 0, 0);
+  SDL_Surface* screen = SDL_CreateRGBSurface(SDL_SWSURFACE, 320,240,32, 0xff0000, 0xff00, 0xff, 0xff000000);
+  //SDL_Surface* screen = SDL_CreateRGBSurface(SDL_SWSURFACE, 320,240,16, scale->format->Rmask,scale->format->Gmask,scale->format->Bmask, 0);
+#else
   scale = SDL_SetVideoMode(SCREENW*doScale,SCREENH*doScale,16, sdlVideoModeFlags);
   SDL_Surface* screen = SDL_CreateRGBSurface(SDL_SWSURFACE, 320,240,16, scale->format->Rmask,scale->format->Gmask,scale->format->Bmask,0xff000000);
+#endif
 
   //Set scaling
   setting()->scaleFactor= (float)scale->h/240.0;
@@ -70,6 +90,13 @@ void swScale( SDL_Surface* screen, int doScale )
 
     if( doScale > -1 )
     {
+#ifdef OGS_SDL2
+      /* test routine */
+      //SDL_FillRect(scale, NULL, SDL_MapRGB(gpScreen->format, 255, 0, 0));
+      SDL_BlitScaled(scale, NULL, sdlSurface, NULL);
+      SDL_UpdateWindowSurface(sdlWindow);
+#else
       SDL_Flip(scale);
+#endif
     }
 }

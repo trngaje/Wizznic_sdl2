@@ -20,7 +20,11 @@
 
 #include "list/list.h"
 #include "text.h"
+#ifdef OGS_SDL2
+#include <SDL2/SDL.h>
+#else
 #include <SDL/SDL.h>
+#endif
 
 //Highscore entries (also used for in-game stats)
 struct hsEntry_s

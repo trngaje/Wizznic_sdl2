@@ -23,6 +23,11 @@
 #include "../player.h"
 #include "../pack.h"
 
+#ifdef OGS_SDL2
+SDL_Window* sdlWindow;
+SDL_Surface* sdlSurface;
+#endif
+
 void dumplevelimages(SDL_Surface* screen, const char* packName, int dumpStartImage)
 {
   //Loop through levels
@@ -74,8 +79,12 @@ void dumplevelimages(SDL_Surface* screen, const char* packName, int dumpStartIma
       //Draw the image
       draw(&cur,&pf, screen);
     }
-
+#ifdef OGS_SDL2
+    SDL_BlitScaled(screen, NULL, sdlSurface, NULL);
+    SDL_UpdateWindowSurface(sdlWindow);
+#else
     SDL_Flip(screen);
+#endif
 
     //Save image
     sprintf(buf, "%s.tga", levelInfo(l)->file);
@@ -126,9 +135,12 @@ void dumpOneLevelFile(SDL_Surface* screen, const char* fileName)
     //Draw the image
     draw(&cur,&pf, screen);
 
-
+#ifdef OGS_SDL2
+    SDL_BlitScaled(screen, NULL, sdlSurface, NULL);
+    SDL_UpdateWindowSurface(sdlWindow);
+#else
     SDL_Flip(screen);
-
+#endif
     //Save image
     sprintf(buf, "%s.tga", fileName);
 

@@ -18,7 +18,11 @@
 #ifndef SCROLLBAR_H_
 #define SCROLLBAR_H_
 
+#ifdef OGS_SDL2
+#include <SDL2/SDL.h>
+#else
 #include <SDL/SDL.h>
+#endif
 
 void scrollBarInit();
 

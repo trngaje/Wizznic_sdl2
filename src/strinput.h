@@ -16,7 +16,11 @@
  ************************************************************************/
 
 #include <stdlib.h>
+#ifdef OGS_SDL2
+#include <SDL2/SDL.h>
+#else
 #include <SDL/SDL.h>
+#endif
 
 typedef struct {
     SDL_Surface* dstSurface;

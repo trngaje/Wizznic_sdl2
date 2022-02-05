@@ -18,9 +18,17 @@
  * along with Wizznic.  If not, see <http://www.gnu.org/licenses/>.     *
  ************************************************************************/
 
+#ifdef OGS_SDL2
+#include <SDL2/SDL.h>
+#else
 #include <SDL/SDL.h>
+#endif
 
+#ifdef OGS_SDL2
+SDL_Surface* swScaleInit(int doScale );
+#else
 SDL_Surface* swScaleInit( int sdlVideoModeFlags, int doScale );
+#endif
 void swScale( SDL_Surface* screen, int doScale );
 
 #endif // SWSCALE_H_INCLUDED

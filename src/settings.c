@@ -16,8 +16,13 @@
  ************************************************************************/
 
 #include <stdio.h>
+#ifdef OGS_SDL2
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_mixer.h>
+#else
 #include <SDL/SDL.h>
 #include <SDL/SDL_mixer.h>
+#endif
 
 #ifdef WIN32
   #include <direct.h>

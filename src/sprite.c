@@ -19,6 +19,11 @@
 #include "ticks.h"
 #include "pack.h"
 
+#ifdef OGS_SDL2
+extern SDL_Window* sdlWindow;
+extern SDL_Surface* sdlSurface;
+#endif
+
 SDL_Surface* loadImg( const char* fileName )
 {
   //Load the surface
@@ -34,6 +39,11 @@ SDL_Surface* loadImg( const char* fileName )
 
     if(unoptimized!=NULL)
     {
+#ifdef OGS_SDL2
+      SDL_SetColorKey( unoptimized, SDL_TRUE, SDL_MapRGB( unoptimized->format, 0, 0xFF, 0xFF) );
+      optimized = SDL_ConvertSurfaceFormat(unoptimized, SDL_GetWindowPixelFormat(sdlWindow), 0);
+      SDL_FreeSurface( unoptimized );
+#else
       //Create optimized.
       optimized = SDL_DisplayFormat( unoptimized );
 
@@ -45,6 +55,7 @@ SDL_Surface* loadImg( const char* fileName )
         //Set colorkey for cheap transparency
         SDL_SetColorKey( optimized, SDL_SRCCOLORKEY, SDL_MapRGB( optimized->format, 0, 0xFF, 0xFF ) );
       }
+#endif
     } else {
       printf("loadImg(%s) (IMG_Load) failed: %s\n", fileName, IMG_GetError());
     }

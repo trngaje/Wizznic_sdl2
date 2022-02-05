@@ -19,7 +19,11 @@
 
 #include <unistd.h>
 #include <string.h>
+#ifdef OGS_SDL2
+#include <SDL2/SDL.h>
+#else
 #include <SDL/SDL.h>
+#endif
 
 #include "../defs.h"
 #include "../settings.h"
@@ -84,7 +88,11 @@ void dlcTryInstall( const char* code, const char* dest )
   sprintf( cmd->destFileName, "%s/%s.bin", getUsrPackDir(), code );
   sprintf( cmd->requestCmd,CMD_DOWNLOAD_DLC_FILE, code, cmd->destFileName);
 
+#ifdef OGS_SDL2
+  if( SDL_CreateThread( dlcDownloadThread, NULL, cmd ) == NULL )
+#else
   if( SDL_CreateThread( dlcDownloadThread, cmd ) == NULL )
+#endif
   {
     printf("Error: Coulnd't start dlc download thread: %s\n", SDL_GetError());
   }
@@ -137,7 +145,11 @@ void dlcCheckOnline()
 
   sprintf( cmd->requestCmd, CMD_CHECK_DLC_API_VERSION);
 
+#ifdef OGS_SDL2
+  SDL_CreateThread( dlcCheckOnlineThread, NULL, cmd );
+#else
   SDL_CreateThread( dlcCheckOnlineThread, cmd );
+#endif
   //Do not free cmd, the thread will do that.
 }
 

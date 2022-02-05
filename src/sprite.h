@@ -18,8 +18,13 @@
  * along with Wizznic.  If not, see <http://www.gnu.org/licenses/>.     *
  ************************************************************************/
 
+#ifdef OGS_SDL2
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
+#else
 #include <SDL/SDL.h>
 #include <SDL/SDL_image.h>
+#endif
 
 typedef struct {
   SDL_Rect clip; //Position in the surface

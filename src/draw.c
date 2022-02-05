@@ -175,8 +175,10 @@ void cleanUpDraw()
     graphics.wallImg=0;
 
   //Walls
+#ifndef OGS_SDL2
   if(graphics.wallsImg) SDL_FreeSurface(graphics.wallsImg);
     graphics.wallsImg=0;
+#endif
 
   //Wall sprites
   for(i=0; i < 13; i++)

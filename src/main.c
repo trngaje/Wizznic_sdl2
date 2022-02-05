@@ -19,8 +19,13 @@
 #include <stdlib.h>
 #include <time.h>
 
+#ifdef OGS_SDL2
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
+#else
 #include <SDL/SDL.h>
 #include <SDL/SDL_image.h>
+#endif
 
 #include "defs.h"
 #include "board.h"
@@ -49,7 +54,11 @@
 #if defined(PC)
 #include <sys/stat.h>
 #include <unistd.h>
+#ifdef OGS_SDL2
+#include <SDL2/SDL_mixer.h>
+#else
 #include <SDL/SDL_mixer.h>
+#endif
 //
 #define FFMPEG_VID_STR "ffmpeg -y -loglevel 8 -f rawvideo -pix_fmt %s -s:v 320x240  -r 50 -i - -sws_flags neighbor -vf scale=1280:960 -c:v libx264 -pix_fmt yuv420p -vb 90000k -r 60 %s_video.mp4"
 #define FFMPEG_AUD_STR "ffmpeg -y -loglevel 8 -f s16le -ar 44100 -ac 2 -i - -acodec libvorbis -ab 192k %s_sound.ogg"
@@ -62,10 +71,32 @@ void sndRec(int __attribute__((__unused__))chan, void *stream, int len, void *ud
 
 #endif
 
+#ifdef OGS_SDL2
+extern SDL_Window* sdlWindow;
+extern SDL_Surface* sdlSurface;
+#endif
 
+#ifdef OGS_SDL2
+SDL_Surface* swScreen(void)
+#else
 SDL_Surface* swScreen(int sdlVideoModeFlags)
+#endif
 {
+#ifdef OGS_SDL2
+  sdlWindow = SDL_CreateWindow("wizznic",
+                              SDL_WINDOWPOS_UNDEFINED,  
+                              SDL_WINDOWPOS_UNDEFINED,  
+                              SCREENW, SCREENH,
+                              SDL_WINDOW_OPENGL); 
+  sdlSurface = SDL_GetWindowSurface(sdlWindow);
+  SDL_Surface* screen=SDL_CreateRGBSurface(SDL_SWSURFACE, SCREENW, SCREENH, 16, 0xF800, 0x7E0, 0x1F, 0);
+  //SDL_Surface* screen=SDL_CreateRGBSurface(SDL_SWSURFACE, SCREENW, SCREENH, 16, 0xF000, 0xF00, 0xF0, 0xF);
+
+	// game screen is ok
+  //SDL_Surface* screen=SDL_CreateRGBSurface(SDL_SWSURFACE, SCREENW, SCREENH, 32, 0xff0000, 0xff00, 0xff, 0xff000000);
+#else
   SDL_Surface* screen=SDL_SetVideoMode(SCREENW,SCREENH,16, SDL_SWSURFACE | sdlVideoModeFlags);
+#endif
 
   if( !screen )
   {
@@ -84,7 +115,9 @@ int main(int argc, char *argv[])
   int doScale=0; // 0=Undefined, 1=320x240, -1=OpenGL, >1=SwScale
   char* dumpPack=NULL;
   int state=1; //Game, Menu, Editor, Quit
+#ifndef OGS_SDL2
   int sdlVideoModeFlags = SDL_SWSURFACE;
+#endif
   int i;
 
 #if defined(PC)
@@ -282,10 +315,12 @@ int main(int argc, char *argv[])
 
   }
 
+#ifndef OGS_SDL2
   if( setting()->fullScreen )
   {
     sdlVideoModeFlags |= SDL_FULLSCREEN;
   }
+#endif
 
   if(doScale)
   {
@@ -294,11 +329,19 @@ int main(int argc, char *argv[])
     {
     #ifdef HAVE_ACCELERATION
       printf("Enabling platform specific accelerated scaling.\n");
+#ifdef OGS_SDL2
+      screen = platformInitAccel();
+#else
       screen = platformInitAccel(sdlVideoModeFlags);
+#endif
       if( !screen )
       {
         printf("Failed to set platform accelerated scaling, falling back to software window.\n");
+#ifdef OGS_SDL2
+	screen=swScreen();
+#else
         screen=swScreen(SDL_SWSURFACE);
+#endif
         doScale=0;
       }
     #else
@@ -310,14 +353,22 @@ int main(int argc, char *argv[])
     #ifdef WANT_SWSCALE
       //Set up software scaling
       printf("Enabling slow software-based scaling to %ix%i.\n",320*doScale, 240*doScale);
+#ifdef OGS_SDL2
+      screen = swScaleInit(doScale);
+#else
       screen = swScaleInit(sdlVideoModeFlags,doScale);
+#endif
     #else
       printf("\nError:\n  I don't support software scaling, don't give me any -z options\n  Exiting...\n");
       return(-1);
     #endif
     }
   } else {
+#ifdef OGS_SDL2
+    screen=swScreen();
+#else
     screen=swScreen(sdlVideoModeFlags);
+#endif
     doScale=0;
   }
 
@@ -329,13 +380,14 @@ int main(int argc, char *argv[])
     return(-1);
   }
 
-
+#ifndef OGS_SDL2
   //Set window title
   SDL_WM_SetCaption("Wizznic!", "Wizznic!");
   //Set window icon
   SDL_Surface* icon = IMG_Load( DATADIR"data/wmicon.png");
   SDL_WM_SetIcon(icon, NULL);
   SDL_FreeSurface(icon);
+#endif
 
   #endif
 
@@ -562,7 +614,14 @@ int main(int argc, char *argv[])
         break;
       #endif
       case 0:
+#ifdef OGS_SDL2
+	/* test routine */
+	//SDL_FillRect(screen, NULL, SDL_MapRGB(gpScreen->format, 255, 0, 0));
+	SDL_BlitScaled(screen, NULL, sdlSurface, NULL);
+	SDL_UpdateWindowSurface(sdlWindow);
+#else
         SDL_Flip(screen);
+#endif
         break;
       #if defined(WANT_SWSCALE)
       default:
